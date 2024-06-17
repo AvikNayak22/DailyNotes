@@ -19,8 +19,10 @@ const Navbar = ({ userInfo }) => {
   };
 
   return (
-    <div className="bg-white flex items-center justify-between px-6 py-2 drop-shadow">
-      <h2 className="font-bold text-xl text-black py-2">DailyNotes</h2>
+    <div className="bg-white flex items-center justify-center gap-3 md:justify-between px-6 py-2 drop-shadow">
+      <h2 className="font-bold text-lg md:text-xl  text-black py-2">
+        DailyNotes
+      </h2>
 
       <SearchBar
         value={searchQuery}

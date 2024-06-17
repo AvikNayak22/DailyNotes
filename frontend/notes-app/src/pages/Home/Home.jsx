@@ -7,6 +7,8 @@ import NoteCard from "../../components/Cards/NoteCard";
 import Navbar from "../../components/Navbar/Navbar";
 import AddEditNotes from "./AddEditNotes";
 import axiosInstance from "../../utils/axiosInstance";
+import Toast from "../../components/ToastMessage/Toast";
+import EmptyCard from "../../components/Cards/EmptyCard";
 
 const Home = () => {
   const [openAddEditModal, setOpenAddEditModal] = useState({
@@ -15,9 +17,34 @@ const Home = () => {
     data: null,
   });
 
+  const [showToastMsg, setShowToastMsg] = useState({
+    isShown: false,
+    message: "",
+    type: "add",
+  });
+
   const [userInfo, setUserInfo] = useState(null);
   const [allNotes, setAllNotes] = useState([]);
   const navigate = useNavigate();
+
+  const handleEdit = (noteDetails) => {
+    setOpenAddEditModal({ isShown: true, data: noteDetails, type: "edit" });
+  };
+
+  const showToastMessage = (message, type) => {
+    setShowToastMsg({
+      isShown: true,
+      message,
+      type,
+    });
+  };
+
+  const handleCloseToast = () => {
+    setShowToastMsg({
+      isShown: false,
+      message: "",
+    });
+  };
 
   //get user info
   const getUserInfo = async () => {
@@ -47,6 +74,27 @@ const Home = () => {
     }
   };
 
+  //Delete note
+  const deleteNote = async (data) => {
+    const noteId = data._id;
+    try {
+      const response = await axiosInstance.delete("/delete-note/" + noteId);
+
+      if (response.data && !response.data.error) {
+        showToastMessage("Note deleted Successfully", "delete");
+        getAllNotes();
+      }
+    } catch (error) {
+      if (
+        error.response &&
+        error.response.data &&
+        error.response.data.message
+      ) {
+        console.log("An unexpected error occurred. Please try again.");
+      }
+    }
+  };
+
   useEffect(() => {
     getAllNotes();
     getUserInfo();
@@ -55,22 +103,31 @@ const Home = () => {
   return (
     <>
       <Navbar userInfo={userInfo} />
-      <div className="container mx-auto ">
-        <div className="grid grid-cols-3 gap-4 mt-8 ">
-          {allNotes.map((item, index) => {
-            <NoteCard
-              key={item._id}
-              title={item.title}
-              date={item.createOn}
-              content={item.content}
-              tags={item.tags}
-              isPinned={item.isPinned}
-              onEdit={() => {}}
-              onDelete={() => {}}
-              onPinNote={() => {}}
-            />;
-          })}
-        </div>
+      <div className="container mx-auto px-4 sm:px-6">
+        {allNotes.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-8">
+            {allNotes.map((item) => {
+              return (
+                <NoteCard
+                  key={item._id}
+                  title={item.title}
+                  date={item.createOn}
+                  content={item.content}
+                  tags={item.tags}
+                  isPinned={item.isPinned}
+                  onEdit={() => handleEdit(item)}
+                  onDelete={() => deleteNote(item)}
+                  onPinNote={() => {}}
+                />
+              );
+            })}
+          </div>
+        ) : (
+          <EmptyCard
+            imgSrc="https://static.vecteezy.com/system/resources/previews/006/563/742/original/create-new-file-document-concept-illustration-flat-design-eps10-modern-graphic-element-for-landing-page-empty-state-ui-infographic-icon-vector.jpg"
+            message="Starting creating your first note! Click the 'add' button to jot down your thoughts, ideas and reminders. Let's get started!"
+          />
+        )}
       </div>
 
       <button
@@ -83,6 +140,7 @@ const Home = () => {
       </button>
 
       <Modal
+        ariaHideApp={false}
         isOpen={openAddEditModal.isShown}
         onRequestClose={() => {}}
         style={{
@@ -91,7 +149,7 @@ const Home = () => {
           },
         }}
         contentLabel=""
-        className="w-[40%] max-h-3/4 bg-white rounded-md mx-auto mt-14 p-5 overflow-auto"
+        className="w-[85%] md:w-[40%] max-h-3/4 bg-white rounded-md mx-auto mt-14 p-5 overflow-auto"
       >
         <AddEditNotes
           type={openAddEditModal.type}
@@ -99,8 +157,17 @@ const Home = () => {
           onClose={() => {
             setOpenAddEditModal({ isShown: false, type: "add", data: null });
           }}
+          getAllNotes={getAllNotes}
+          showToastMessage={showToastMessage}
         />
       </Modal>
+
+      <Toast
+        isShown={showToastMsg.isShown}
+        message={showToastMsg.message}
+        type={showToastMsg.type}
+        onClose={handleCloseToast}
+      />
     </>
   );
 };
