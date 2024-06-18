@@ -1,7 +1,6 @@
 # DailyNotes
 
-DailyNotes is a modern and intuitive note-taking application that allows users to create, edit, and manage their notes efficiently. The application supports features like tag management, search functionality, user authentication, and more.
-
+DailyNotes is a modern and intuitive note-taking application designed to help users stay organized. It provides a user-friendly interface for creating, editing, and managing notes, along with features such as tagging, searching, and user authentication.
 ## Features
 
 - **User Authentication**: Secure login and signup functionality.
