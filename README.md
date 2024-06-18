@@ -51,3 +51,5 @@ DailyNotes is a modern and intuitive note-taking application designed to help us
    ```
    npm start
    ```
+## Contributors
+- Avik Nayak (@AvikNayak22)
