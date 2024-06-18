@@ -25,6 +25,8 @@ const Home = () => {
 
   const [userInfo, setUserInfo] = useState(null);
   const [allNotes, setAllNotes] = useState([]);
+  const [isSearch, setIsSearch] = useState(false);
+
   const navigate = useNavigate();
 
   const handleEdit = (noteDetails) => {
@@ -95,6 +97,47 @@ const Home = () => {
     }
   };
 
+  //search for a note
+  const onSearchNote = async (query) => {
+    try {
+      const response = await axiosInstance.get("/search-notes", {
+        params: { query },
+      });
+
+      if (response.data && response.data.notes) {
+        setIsSearch(true);
+        setAllNotes(response.data.notes);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const updateIsPinned = async (noteData) => {
+    const noteId = noteData._id;
+
+    try {
+      const response = await axiosInstance.put(
+        "/update-note-pinned/" + noteId,
+        {
+          isPinned: !noteData.isPinned,
+        }
+      );
+
+      if (response.data && response.data.note) {
+        showToastMessage("Note updated Successfully");
+        getAllNotes();
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const handleClearSearch = () => {
+    setIsSearch(false);
+    getAllNotes();
+  };
+
   useEffect(() => {
     getAllNotes();
     getUserInfo();
@@ -102,7 +145,11 @@ const Home = () => {
 
   return (
     <>
-      <Navbar userInfo={userInfo} />
+      <Navbar
+        userInfo={userInfo}
+        onSearchNote={onSearchNote}
+        handleClearSearch={handleClearSearch}
+      />
       <div className="container mx-auto px-4 sm:px-6">
         {allNotes.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-8">
@@ -117,15 +164,23 @@ const Home = () => {
                   isPinned={item.isPinned}
                   onEdit={() => handleEdit(item)}
                   onDelete={() => deleteNote(item)}
-                  onPinNote={() => {}}
+                  onPinNote={() => updateIsPinned(item)}
                 />
               );
             })}
           </div>
         ) : (
           <EmptyCard
-            imgSrc="https://static.vecteezy.com/system/resources/previews/006/563/742/original/create-new-file-document-concept-illustration-flat-design-eps10-modern-graphic-element-for-landing-page-empty-state-ui-infographic-icon-vector.jpg"
-            message="Starting creating your first note! Click the 'add' button to jot down your thoughts, ideas and reminders. Let's get started!"
+            imgSrc={
+              isSearch
+                ? "https://th.bing.com/th/id/R.5c7ecf18fe5407b799fae4e268a6cb22?rik=IlwFi0D2FzTpbw&riu=http%3a%2f%2fwww.simsnd.in%2fassets%2fadmin%2fno_data_found.png&ehk=%2fz48IcCKjPSsISueZDv1P4KJKQpPHMLHYWpqYubw60c%3d&risl=&pid=ImgRaw&r=0"
+                : "https://static.vecteezy.com/system/resources/previews/006/563/742/original/create-new-file-document-concept-illustration-flat-design-eps10-modern-graphic-element-for-landing-page-empty-state-ui-infographic-icon-vector.jpg"
+            }
+            message={
+              isSearch
+                ? "Oops! No notes found matching your search."
+                : "Starting creating your first note! Click the 'add' button to jot down your thoughts, ideas and reminders. Let's get started!"
+            }
           />
         )}
       </div>
