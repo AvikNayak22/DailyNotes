@@ -10,7 +10,6 @@ function authenticateToken(req, res, next) {
     if (err) res.sendStatus(401);
 
     req.user = user;
-
     next();
   });
 }
